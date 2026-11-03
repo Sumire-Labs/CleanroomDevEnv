@@ -63,8 +63,10 @@ if (mixinEnabled) {
     })
 }
 sourceSets.main {
-    if (mixinEnabled) java.srcDir 'src/mixin/java'
-    if (coremodEnabled) java.srcDir 'src/coremod/java'
+    // Optional code stays in the standard main tree; these packages belong to each feature.
+    def packagePath = modPackage.replace('.', '/')
+    if (!mixinEnabled) java.exclude "${packagePath}/mixin/**"
+    if (!coremodEnabled) java.exclude "${packagePath}/core/**"
     resources.exclude { detail -> detail.path.startsWith('META-INF/') && detail.name.endsWith('_at.cfg') &&
             !accessTransformerNames.contains(detail.name) }
     if (!mixinEnabled) resources.exclude '*.mixin.json'

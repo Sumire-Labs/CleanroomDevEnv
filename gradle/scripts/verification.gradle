@@ -8,6 +8,7 @@ def verifyModJar = tasks.register('verifyModJar') {
     dependsOn tasks.named('reobfJar')
     inputs.file(tasks.named('reobfJar').flatMap { it.output })
     inputs.property('modId', mod_id)
+    inputs.property('modPackage', modPackage)
     inputs.property('modVersion', versioning.version)
     inputs.property('mixinEnabled', mixinEnabled)
     inputs.property('coremodEnabled', coremodEnabled)
@@ -48,8 +49,10 @@ def verifyModJar = tasks.register('verifyModJar') {
                 if (coremod != expected.coremodClass || jar.getJarEntry(coremod.replace('.', '/') + '.class') == null) {
                     throw new GradleException('Missing coremod class or incorrect FMLCorePlugin attribute.')
                 }
-            } else if (coremod != null) {
-                throw new GradleException('Coremod manifest attribute leaked into the disabled variant.')
+            } else if (coremod != null || jar.entries().toList().any {
+                it.name.startsWith(expected.modPackage.replace('.', '/') + '/core/')
+            }) {
+                throw new GradleException('Coremod classes or manifest attribute leaked into the disabled variant.')
             }
             jar.entries().toList().findAll { !it.directory &&
                 (it.name.endsWith('.class') || it.name in ['mcmod.info', 'pack.mcmeta'] || it.name.endsWith('.mixin.json'))
@@ -68,7 +71,8 @@ def verifyModJar = tasks.register('verifyModJar') {
                     if (jar.getJarEntry(classFile) == null) throw new GradleException("Missing Mixin class: ${name}")
                 }
             } else if (configs != null || jar.entries().toList().any {
-                it.name == expected.nativeRefmap || it.name.endsWith('.mixin.json') || it.name.endsWith('.refmap.json')
+                it.name == expected.nativeRefmap || it.name.endsWith('.mixin.json') || it.name.endsWith('.refmap.json') ||
+                        it.name.startsWith(expected.modPackage.replace('.', '/') + '/mixin/')
             }) {
                 throw new GradleException('Mixin resources leaked into the disabled variant.')
             }
