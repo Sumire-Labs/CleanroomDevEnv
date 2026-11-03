@@ -1,0 +1,3 @@
+// Project-specific customizations. Applied after the template scripts.
+// With enable_shadow=true:
+// shadowJar { relocate 'org.example.library', "${modPackage}.internal.library" }

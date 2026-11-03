@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8.7",
+  "compatibilityLevel": "JAVA_25",
+  "package": "@{MOD_PACKAGE}.mixin",
+  "plugin": "@{MOD_PACKAGE}.mixin.ModMixinConfigPlugin",
+  "refmap": "@{MIXIN_REFMAP}",
+  "target": "@env(DEFAULT)",
+  "mixins": [],
+  "client": ["MinecraftMixin"],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
