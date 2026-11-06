@@ -69,15 +69,19 @@ jobs:
             echo 'Modrinth ID configured: set MODRINTH_TOKEN.' >&2
             exit 1
           fi
-      - name: Build
-        run: ./gradlew clean build --console=plain
-      - name: Generate release notes
+      - name: Prepare release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh api --method POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
-            -f tag_name="$TAG" --jq .body > RELEASE_NOTES.md
+          if [[ -f CHANGELOG.md ]]; then
+            python3 .github/scripts/release-notes.py "$TAG"
+          else
+            gh api --method POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+              -f tag_name="$TAG" --jq .body > RELEASE_NOTES.md
+          fi
+      - name: Build
+        run: ./gradlew clean build --console=plain
       - name: Publish Maven artifacts
         if: steps.release.outputs.maven == 'true'
         env:
