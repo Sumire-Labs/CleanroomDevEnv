@@ -64,6 +64,17 @@
       "depNameTemplate": "com.cleanroommc:cleanroom-userdev",
       "registryUrlTemplate": "https://maven.cleanroommc.com",
       "versioningTemplate": "gradle"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^gradle\\.properties$/"],
+      "matchStrings": [
+        "(?:^|\\r?\\n)asset_mover_version[ \\t]*=[ \\t]*(?<currentValue>[^\\s]+)"
+      ],
+      "datasourceTemplate": "maven",
+      "depNameTemplate": "com.cleanroommc:assetmover",
+      "registryUrlTemplate": "https://maven.cleanroommc.com",
+      "versioningTemplate": "gradle"
     }
   ]
 }

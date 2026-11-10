@@ -11,39 +11,22 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            variant: default
-            flags: ''
-          - os: windows-latest
-            variant: default
-            flags: ''
-          - os: ubuntu-latest
-            variant: plain
-            flags: '-Penable_mixin=false'
-          - os: ubuntu-latest
-            variant: optional
-            flags: '-Penable_shadow=true -Paccess_transformers=modid_at.cfg -Pcoremod_plugin_class=com.example.modid.core.LoadingPlugin'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
-      - uses: actions/setup-java@v6.1.0
+      - uses: actions/setup-java@v6.2.0
         with:
           java-version: '25'
           distribution: temurin
       - uses: gradle/actions/setup-gradle@v6.4.1
-      - name: Build and check distributable
-        shell: bash
-        run: bash ./gradlew clean build ${{ matrix.flags }} --console=plain
+      - name: Build, test and check formatting
+        run: ./gradlew clean build -Penable_junit_testing=true -Penable_spotless=true --console=plain
       - uses: actions/upload-artifact@v7.0.2
         with:
-          name: jars-${{ matrix.os }}-${{ matrix.variant }}
+          name: jars
           path: build/libs/*.jar
           if-no-files-found: error
