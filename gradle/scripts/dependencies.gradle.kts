@@ -4,9 +4,18 @@ val cleanroom = extensions.getByType<CleanroomExtension>()
 
 repositories {
     // CleanroomGradle supplies CleanroomMC, Mojang and Maven Central.
-    maven("https://cursemaven.com") { name = "CurseMaven" }
-    maven("https://curse.cleanroommc.com") { name = "CleanroomCurseMaven" }
-    maven("https://api.modrinth.com/maven") { name = "Modrinth" }
+    maven("https://cursemaven.com") {
+        name = "CurseMaven"
+        content { includeGroup("curse.maven") }
+    }
+    maven("https://curse.cleanroommc.com") {
+        name = "CleanroomCurseMaven"
+        content { includeGroup("curse.maven") }
+    }
+    maven("https://api.modrinth.com/maven") {
+        name = "Modrinth"
+        content { includeGroup("maven.modrinth") }
+    }
     if (providers.gradleProperty("cg.repos.enableLocal").orElse("false").get().toBoolean()) mavenLocal()
 }
 

@@ -33,7 +33,16 @@ val verifyModJar = tasks.register("verifyModJar") {
     inputs.property("nativeRefmap", nativeRefmap)
     inputs.property("containedDependencies", containedNames)
     doLast {
-        JarFile(runtimeJar.get().asFile).use { jar ->
+        val mod_id = inputs.properties.getValue("modId") as String
+        val root_package = inputs.properties.getValue("modPackage") as String
+        val modVersion = inputs.properties.getValue("modVersion") as String
+        val mixinEnabled = inputs.properties.getValue("mixinEnabled") as Boolean
+        val coremod_plugin_class = inputs.properties.getValue("coremodClass") as String
+        val coremodEnabled = coremod_plugin_class.isNotBlank()
+        val accessTransformers = (inputs.properties.getValue("accessTransformers") as List<*>).map { it as String }
+        val nativeRefmap = inputs.properties.getValue("nativeRefmap") as String
+        val expectedContained = (inputs.properties.getValue("containedDependencies") as List<*>).map { it as String }
+        JarFile(inputs.files.singleFile).use { jar ->
             val entries = jar.entries().asSequence().toList()
             if (jar.getJarEntry("META-INF/LICENSE.md") == null) {
                 throw GradleException("Missing license notice: META-INF/LICENSE.md")
@@ -51,7 +60,6 @@ val verifyModJar = tasks.register("verifyModJar") {
             if (attributes.getValue("ModType") != "CRL") {
                 throw GradleException("Missing Cleanroom-only ModType manifest attribute.")
             }
-            val expectedContained = containedNames.get()
             val declaredContained = attributes.getValue("ContainedDeps").orEmpty()
                 .split(Regex("\\s+")).filter(String::isNotBlank).sorted()
             if (declaredContained != expectedContained || expectedContained.any { jar.getJarEntry(it) == null } ||

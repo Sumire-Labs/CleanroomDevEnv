@@ -9,6 +9,7 @@ if (providers.gradleProperty("enable_mixin").get().toBoolean()) {
     val extraMappings = layout.buildDirectory.file("generated/mixin-mappings/mixin.tsrg")
     val mergedMappings = layout.buildDirectory.file("generated/mixin-mappings/merged.tsrg")
     val extractedMapping = tasks.named<ExtractUserdevFile>("extractUserdevMcpToSrg")
+    val baseMappings = extractedMapping.flatMap { it.output }
     val compileJava = tasks.named<JavaCompile>("compileJava") {
         outputs.file(extraMappings)
         options.compilerArgs.add("-AoutTsrgFile=${extraMappings.get().asFile}")
@@ -18,11 +19,11 @@ if (providers.gradleProperty("enable_mixin").get().toBoolean()) {
         group = "build setup"
         description = "Merges Minecraft and Mixin member mappings for the reobfuscated jar."
         dependsOn(compileJava, extractedMapping)
-        inputs.file(extractedMapping.flatMap { it.output })
+        inputs.file(baseMappings)
         inputs.file(extraMappings)
         outputs.file(mergedMappings)
         doLast {
-            val base = IMappingFile.load(extractedMapping.get().output.get().asFile)
+            val base = IMappingFile.load(baseMappings.get().asFile)
             val extra = IMappingFile.load(extraMappings.get().asFile)
             base.merge(extra).write(mergedMappings.get().asFile.toPath(), IMappingFile.Format.TSRG2, false)
         }

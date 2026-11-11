@@ -87,10 +87,11 @@ if (mixinEnabled) {
 
 sourceSets.main {
     val packagePath = modPackage.replace('.', '/')
+    val enabledTransformers = accessTransformerNames
     if (!mixinEnabled) java.exclude("$packagePath/mixin/**")
     if (coremodClass.isBlank()) java.exclude("$packagePath/core/**")
     resources.exclude {
-        it.path.startsWith("META-INF/") && it.name.endsWith("_at.cfg") && it.name !in accessTransformerNames
+        it.path.startsWith("META-INF/") && it.name.endsWith("_at.cfg") && it.name !in enabledTransformers
     }
     if (!mixinEnabled) resources.exclude("*.mixin.json")
 }
@@ -130,8 +131,9 @@ tasks.withType<JavaCompile>().configureEach { options.encoding = "UTF-8" }
 tasks.withType<Jar>().configureEach {
     from("LICENSE.md") { into("META-INF") }
     if (name == "jar" || name == "shadowJar") {
+        val embeddedFiles = containedFiles
         doFirst {
-            val files = containedFiles.get()
+            val files = embeddedFiles.get()
             if (files.isNotEmpty()) {
                 (this as Jar).manifest.attributes(
                     "ContainedDeps" to files.joinToString(" ") { it.asFile.name },
