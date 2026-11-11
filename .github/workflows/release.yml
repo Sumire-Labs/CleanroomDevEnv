@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
           persist-credentials: false
-      - uses: actions/setup-java@v6.1.0
+      - uses: actions/setup-java@v6.2.0
         with:
           java-version: '25'
           distribution: temurin
@@ -43,7 +43,6 @@ jobs:
         run: |
           info=$(./gradlew -q --console=plain printReleaseInfo)
           echo "version=$(jq -r .version <<< "$info")" >> "$GITHUB_OUTPUT"
-          echo "type=$(jq -r .type <<< "$info")" >> "$GITHUB_OUTPUT"
           echo "maven=$(jq -r .maven <<< "$info")" >> "$GITHUB_OUTPUT"
           echo "curseforge=$(jq -r .curseforge <<< "$info")" >> "$GITHUB_OUTPUT"
           echo "modrinth=$(jq -r .modrinth <<< "$info")" >> "$GITHUB_OUTPUT"
@@ -75,7 +74,43 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           if [[ -f CHANGELOG.md ]]; then
-            python3 .github/scripts/release-notes.py "$TAG"
+            awk -v tag="$TAG" '
+              BEGIN { version = tag; sub(/^v/, "", version) }
+              NR == 1 { sub(/^\357\273\277/, "") }
+              { sub(/\r$/, "") }
+              # Ignore headings inside fenced code blocks.
+              {
+                if (match($0, /^ {0,3}(`{3,}|~{3,})/)) {
+                  marker = substr($0, RSTART, RLENGTH)
+                  sub(/^ +/, "", marker)
+                  if (fence == "") {
+                    fence = marker
+                  } else if (index(marker, fence) == 1 && substr($0, RLENGTH + 1) ~ /^[[:space:]]*$/) {
+                    fence = ""
+                  }
+                } else if (fence == "" && /^ {0,3}#{1,2}[ \t]+[^ \t]/) {
+                  heading = $0
+                  sub(/^ {0,3}#{1,2}[ \t]+/, "", heading)
+                  split(heading, words, /[[:space:]]+/)
+                  label = words[1]
+                  if (label ~ /^\[.*\]$/) label = substr(label, 2, length(label) - 2)
+                  sub(/^v/, "", label)
+                  active = (label == version)
+                  if (active) sections++
+                  next
+                }
+                if (active) notes = notes $0 "\n"
+              }
+              END {
+                if (sections != 1 || notes !~ /[^[:space:]]/) {
+                  print "CHANGELOG.md must have one nonempty section for tag " tag > "/dev/stderr"
+                  exit 1
+                }
+                sub(/^\n+/, "", notes)
+                sub(/\n+$/, "", notes)
+                print notes
+              }
+            ' CHANGELOG.md > RELEASE_NOTES.md
           else
             gh api --method POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" \
               -f tag_name="$TAG" --jq .body > RELEASE_NOTES.md
@@ -100,9 +135,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.ref_name }}
           VERSION: ${{ steps.release.outputs.version }}
-          RELEASE_TYPE: ${{ steps.release.outputs.type }}
         run: |
-          args=()
-          if [[ "$RELEASE_TYPE" != release ]]; then args+=(--prerelease); fi
           gh release create "$TAG" --title "$VERSION" --notes-file RELEASE_NOTES.md \
-            "${args[@]}" build/libs/*.jar
+            build/libs/*.jar
