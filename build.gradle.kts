@@ -118,7 +118,7 @@ tokenEnvoy {
         set("MOD_LOGO_JSON", JsonOutput.toJson(propertyString("mod_logo_path")))
         set("MOD_ISSUE_TRACKER_JSON", JsonOutput.toJson(propertyString("mod_issue_tracker")))
         set("PACK_DESCRIPTION_JSON", JsonOutput.toJson("$modName Resources"))
-        classes { include("**/Reference.class", "**/ExampleMod.class") }
+        classes { include("**/*.class") }
         resources { include("mcmod.info", "pack.mcmeta", "*.mixin.json") }
     }
 }

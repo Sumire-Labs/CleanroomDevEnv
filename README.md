@@ -8,8 +8,7 @@ CleanroomGradleを使ったCleanroom向けのMod開発テンプレート
 
 ## ブランチ
 
-Javaの場合は`main`を使ってください。Mixin・Coremod・ATは`gradle.properties`から有効にできます
-Kotlinは`kotlin`、Scalaは`scala`を使用してください
+Java向けの`main`を使ってください。Mixin・Coremod・ATは`gradle.properties`から有効にできます。
 
 ## 初期設定
 
@@ -93,7 +92,8 @@ refmapはCleanroomGradleが生成します。`cg.userdev.refmap`にはMod固有�
 `enable_coremod=true`にすると、`<root_package>.core.LoadingPlugin`が使われます。
 サンプルの`LoadingPlugin`に、使用するTransformerなどを登録してください。
 クラスを別の場所へ移す場合は、`coremod_plugin_class`に完全修飾名を指定できます。
-`@Mod`クラスを含まないJARにする場合は、`coremod_includes_mod=false`にします。
+Coremod専用として読み込ませる場合は、`coremod_includes_mod=false`にします。
+この設定でJavaクラスがJARから削除されることはありません。使わないModクラスはソースから削除してください。
 
 ## Access Transformer
 
