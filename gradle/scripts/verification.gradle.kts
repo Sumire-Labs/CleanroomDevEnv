@@ -142,8 +142,8 @@ val verifyModJar = tasks.register("verifyModJar") {
                 if (configs != "$mod_id.mixin.json") throw GradleException("Incorrect MixinConfigs attribute.")
                 val config = json(configs) as Map<*, *>
                 val refmap = json(config["refmap"] as String) as Map<*, *>
-                if ((refmap["mappings"] as? Map<*, *>).isNullOrEmpty()) {
-                    throw GradleException("Missing Mixin mappings in the native refmap.")
+                if (refmap["mappings"] !is Map<*, *>) {
+                    throw GradleException("Missing or invalid mappings object in the native refmap.")
                 }
                 listOf("mixins", "client", "server").flatMap { (config[it] as? List<*>).orEmpty() }.forEach { name ->
                     val classFile = "${config["package"]}.$name".replace('.', '/') + ".class"
