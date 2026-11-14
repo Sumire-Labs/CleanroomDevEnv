@@ -105,7 +105,8 @@ Coremod専用として読み込ませる場合は、`coremod_includes_mod=false`
 public net.minecraft.client.Minecraft field_130070_K
 ```
 
-別のファイルを使う場合や複数指定する場合は、`access_transformers`にファイル名を空白区切りで指定します。
+別のファイルを使う場合や複数指定する場合は、`access_transformers`に`META-INF`からの相対パスを空白区切りで指定します。
+たとえば、`access_transformers = nested/custom_at.cfg`なら`src/main/resources/META-INF/nested/custom_at.cfg`を使います。
 
 ## Minecraftのソース
 

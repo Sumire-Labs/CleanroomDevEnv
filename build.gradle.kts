@@ -108,7 +108,8 @@ sourceSets.main {
     if (!mixinEnabled) java.exclude("$packagePath/mixin/**")
     if (coremodClass.isBlank()) java.exclude("$packagePath/core/**")
     resources.exclude {
-        it.path.startsWith("META-INF/") && it.name.endsWith("_at.cfg") && it.name !in enabledTransformers
+        it.path.startsWith("META-INF/") && it.name.endsWith("_at.cfg") &&
+            it.path.removePrefix("META-INF/") !in enabledTransformers
     }
     if (!mixinEnabled) resources.exclude("*.mixin.json")
 }
